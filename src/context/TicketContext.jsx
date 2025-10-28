@@ -1,76 +1,79 @@
-// src/context/TicketContext.jsx
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { STORAGE_KEYS, TICKET_STATUSES, TICKET_PRIORITIES } from "../utils/constants";
-import { getData, setData } from "../utils/storage";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { STORAGE_KEYS } from "../utils/constants";
 
 const TicketContext = createContext();
-export const useTickets = () => useContext(TicketContext);
 
 export const TicketProvider = ({ children }) => {
   const [tickets, setTickets] = useState([]);
 
-  // Load tickets from localStorage on mount
+  // --- Load tickets from localStorage on mount ---
   useEffect(() => {
-    const stored = getData(STORAGE_KEYS.TICKETS);
-    if (stored && Array.isArray(stored)) {
-      setTickets(stored);
-    } else {
-      setTickets([]);
-      setData(STORAGE_KEYS.TICKETS, []);
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.TICKETS);
+      if (saved) setTickets(JSON.parse(saved));
+    } catch (err) {
+      console.error("Failed to load tickets:", err);
     }
   }, []);
 
-  // Persist tickets to localStorage whenever they change
+  // --- Persist tickets to localStorage on every change ---
   useEffect(() => {
-    setData(STORAGE_KEYS.TICKETS, tickets);
+    localStorage.setItem(STORAGE_KEYS.TICKETS, JSON.stringify(tickets));
   }, [tickets]);
 
-  // Create
-  const createTicket = (ticketData) => {
+  // --- CRUD Operations ---
+  const createTicket = (data) => {
     const newTicket = {
       id: Date.now().toString(),
-      title: ticketData.title,
-      description: ticketData.description,
-      priority: ticketData.priority || TICKET_PRIORITIES.LOW,
-      status: TICKET_STATUSES.OPEN,
+      ...data,
+      status: "open",
+      priority: data.priority || "medium",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      user: ticketData.user || "anonymous",
     };
     setTickets((prev) => [...prev, newTicket]);
-    return newTicket;
   };
 
-  // Update
   const updateTicket = (id, updates) => {
     setTickets((prev) =>
-      prev.map((t) =>
-        t.id === id ? { ...t, ...updates, updatedAt: new Date().toISOString() } : t
+      prev.map((ticket) =>
+        ticket.id === id
+          ? { ...ticket, ...updates, updatedAt: new Date().toISOString() }
+          : ticket
       )
     );
   };
 
-  // Delete
   const deleteTicket = (id) => {
-    setTickets((prev) => prev.filter((t) => t.id !== id));
+    setTickets((prev) => prev.filter((ticket) => ticket.id !== id));
   };
 
-  // Update status
-  const updateTicketStatus = (id, status) => {
-    if (!Object.values(TICKET_STATUSES).includes(status)) return;
-    updateTicket(id, { status });
+  const updateTicketStatus = (id, newStatus) => {
+    setTickets((prev) =>
+      prev.map((ticket) =>
+        ticket.id === id
+          ? {
+              ...ticket,
+              status: newStatus,
+              updatedAt: new Date().toISOString(),
+            }
+          : ticket
+      )
+    );
   };
 
-  // Update priority
-  const updateTicketPriority = (id, priority) => {
-    if (!Object.values(TICKET_PRIORITIES).includes(priority)) return;
-    updateTicket(id, { priority });
-  };
-
-  // Clear all tickets
-  const clearTickets = () => {
-    setTickets([]);
-    setData(STORAGE_KEYS.TICKETS, []);
+  const updateTicketPriority = (id, newPriority) => {
+    setTickets((prev) =>
+      prev.map((ticket) =>
+        ticket.id === id
+          ? {
+              ...ticket,
+              priority: newPriority,
+              updatedAt: new Date().toISOString(),
+            }
+          : ticket
+      )
+    );
   };
 
   return (
@@ -79,13 +82,14 @@ export const TicketProvider = ({ children }) => {
         tickets,
         createTicket,
         updateTicket,
+        deleteTicket,
         updateTicketStatus,
         updateTicketPriority,
-        deleteTicket,
-        clearTickets,
       }}
     >
       {children}
     </TicketContext.Provider>
   );
 };
+
+export const useTickets = () => useContext(TicketContext);

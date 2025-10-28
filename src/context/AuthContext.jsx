@@ -4,7 +4,6 @@ import { getSession, setSession, clearSession } from "../utils/storage";
 import { STORAGE_KEYS } from "../utils/constants";
 import { fakeLogin, fakeSignup } from "../utils/fakeApi";
 
-// Named export of AuthContext
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -12,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore session on mount
+  // --- Restore session on mount ---
   useEffect(() => {
     const existingSession = getSession();
     if (existingSession?.user) {
@@ -21,7 +20,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // Signup function
+  // --- Signup function ---
   const signup = async (credentials) => {
     setLoading(true);
     try {
@@ -37,7 +36,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Login function
+  // --- Login function ---
   const login = async (credentials) => {
     setLoading(true);
     try {
@@ -53,7 +52,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout function
+  // --- Logout function ---
   const logout = () => {
     clearSession();
     setUser(null);
@@ -76,7 +75,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use AuthContext
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

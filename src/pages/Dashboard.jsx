@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import React from "react";
 import { useTickets } from "../context/TicketContext";
 import { useAuth } from "../context/AuthContext";
@@ -10,7 +9,7 @@ export default function Dashboard() {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
 
-  // Calculate summary stats
+  // --- Calculate summary stats ---
   const totalTickets = tickets.length;
   const openTickets = tickets.filter((t) => t.status === "open").length;
   const inProgressTickets = tickets.filter(

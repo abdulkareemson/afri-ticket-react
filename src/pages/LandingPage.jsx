@@ -135,7 +135,7 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section
         id="home"
-        className="relative w-full flex items-start justify-start pt-16 md:pt-20"
+        className="relative w-full flex items-start justify-start pt-2 md:pt-2"
       >
         <div className="relative w-full h-[90vh] md:h-[85vh] lg:h-[80vh]">
           <img
